@@ -29,6 +29,7 @@ RUN   apt-get update \
       tzdata \
       gfortran \
       gcc \
+      octave \
    && rm -rf /var/lib/apt/lists/*
 
 
@@ -107,10 +108,7 @@ RUN conda update conda \
 #
 
 #____Octave _______________________________
-RUN apt-get update && \
-    apt-get install octave \
- && rm -rf /var/lib/apt/lists/* \
- && octave --eval 'pkg install -forge dataframe' \
+RUN octave --eval 'pkg install -forge dataframe' \
  && pip install octave_kernel
 
 #____SoS __________________________________
@@ -125,8 +123,8 @@ RUN   pip install --upgrade pip \
                   sos-matlab \
                   sos-python \
                   sos-r \
-               && python -m sos_notebook.install \
-               && jupyter labextension install jupyterlab-sos
+   && python -m sos_notebook.install \
+   && jupyter labextension install jupyterlab-sos
 
 
 WORKDIR /docs
