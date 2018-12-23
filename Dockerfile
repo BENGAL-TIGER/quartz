@@ -7,8 +7,7 @@
 #
 FROM continuumio/miniconda3
 
-# RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-#     locale-gen
+
 RUN  useradd -m -s /bin/bash -N -g sudo "marcvs" \
   && printf "tcho\ntcho" |passwd marcvs
 
@@ -30,7 +29,20 @@ RUN   apt-get update \
       gfortran \
       gcc \
       octave \
+      gnupg gnupg2 gnupg1 \
    && rm -rf /var/lib/apt/lists/*
+#
+
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
+# RUN conda update conda && \
+RUN curl -sL https://deb.nodesource.com/setup_11.x | bash - \
+ && apt-get install -y nodejs --no-install-recommends \
+ && echo "node:"; node -v; echo "npm:"; npm -v \
+ && npm i -g npm \
+ && echo "node:"; node -v; echo "npm:"; npm -v; sleep 30s
 
 
 # Configure environment
@@ -54,11 +66,11 @@ RUN   curl -fL -o julia.tar.gz "https://julialangnightlies-s3.julialang.org/bin/
 	    rm julia.tar.gz;
 
 RUN  julia -e 'import Pkg; Pkg.add("Libdl")' \
-  && julia -e 'import Pkg; Pkg.add("PyPlot")' \
-  && julia -e 'import Pkg; Pkg.add("PGFPlots")' \
-  && julia -e 'import Pkg; Pkg.add("Plots")' \
-  && julia -e 'import Pkg; Pkg.add("PlotlyJS")' \
-  && julia -e 'import Pkg; Pkg.add("UnicodePlots")' \
+  # && julia -e 'import Pkg; Pkg.add("PyPlot")' \
+  # && julia -e 'import Pkg; Pkg.add("PGFPlots")' \
+  # && julia -e 'import Pkg; Pkg.add("Plots")' \
+  # && julia -e 'import Pkg; Pkg.add("PlotlyJS")' \
+  # && julia -e 'import Pkg; Pkg.add("UnicodePlots")' \
   && julia -e 'import Pkg; Pkg.add("RDatasets")' \
   && julia -e 'import Pkg; Pkg.add("Unitful")' \
   && julia -e 'import Pkg; Pkg.add("Feather")' \
@@ -71,15 +83,15 @@ RUN  julia -e 'import Pkg; Pkg.add("Libdl")' \
   # && julia -e 'import Pkg; Pkg.add("Unitful")' \
   # && julia -e 'import Pkg; Pkg.add("Unitful")' \
   # && julia -e 'import Pkg; Pkg.add("HDF5")' \
-  && julia -e 'import Pkg; Pkg.add("GR")' \
+  # && julia -e 'import Pkg; Pkg.add("GR")' \
   && julia -e 'import Pkg; Pkg.add("IJulia")' \
   && julia -e 'using IJulia'
 
 
 
 #____r ____________________________________
-RUN conda update conda \
- && conda install --quiet --yes \
+# RUN conda update conda \
+RUN conda install --quiet --yes \
     'rpy2=2.8*' \
     'r-base=3.4.1' \
     'r-irkernel=0.8*' \
