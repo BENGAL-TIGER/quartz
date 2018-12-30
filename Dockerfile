@@ -10,6 +10,8 @@ FROM continuumio/miniconda3
 RUN  useradd -m -s /bin/bash -N -g sudo "marcvs" \
   && printf "tcho\ntcho" |passwd marcvs
 
+USER root
+
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN   apt-get update \
@@ -92,6 +94,15 @@ RUN  julia -e 'import Pkg; Pkg.add("Libdl")' \
 
 
 
+
+
+# RUN cp -R /root/.local/share/jupyter/kernels/OpenModelica /usr/local/share/jupyter/kernels/
+# RUN mv /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
+
+# mv $HOME/.local/share/jupyter/kernels/julia* $CONDA_DIR/share/jupyter/kernels/ && \
+
+
+
 #____r ____________________________________
 # RUN conda update conda \
 RUN conda install --quiet --yes \
@@ -130,6 +141,7 @@ RUN octave --eval 'pkg install -forge dataframe' \
 
 
 #____OpenModelica _________________________
+USER root
 RUN for deb in deb deb-src; do echo "$deb http://build.openmodelica.org/apt `lsb_release -cs` nightly"; done | tee /etc/apt/sources.list.d/openmodelica.list
 RUN wget -q http://build.openmodelica.org/apt/openmodelica.asc -O- | apt-key add -
 # To verify that your key is installed correctly
@@ -142,11 +154,13 @@ RUN apt-key fingerprint
 # Then update and install OpenModelica
 
 # Update index (again)
-RUN apt-get update && install -y omc omlib-modelica-3.2.2
+RUN apt-get update && apt-get install -y omc omlib-modelica-3.2.2
 
 # Install Python components
-RUN apt-get install -y python-pip python-dev build-essential
-RUN apt-get install -y git
+RUN apt-get install -y python-pip python-dev build-essential git \
+ && pip install --upgrade pip
+# RUN apt-get install -y python-dev build-essential git
+# RUN apt-get install -y git
 
 # Install Jupyter notebook, always upgrade pip
 # RUN pip install --upgrade pip
@@ -158,40 +172,57 @@ RUN pip install -U git+git://github.com/OpenModelica/jupyter-openmodelica.git
 
 # Create a user profile "openmodelicausers" inside the docker container as we should run the docker container as non-root users
 # RUN useradd -m -s /bin/bash openmodelicausers
-RUN useradd -m -s /bin/bash jovyan
+# RUN useradd -m -s /bin/bash jovyan
 
 # Copy the kernel from root location to non root location so that jupyter notebook when started as non-root can find openmodelica kernel
-RUN cp -R /root/.local/share/jupyter/kernels/OpenModelica /usr/local/share/jupyter/kernels/
+
+WORKDIR  /usr/local/share/jupyter/kernels/OpenModelica
+# RUN cp -R /root/.local/share/jupyter/kernels/OpenModelica /usr/local/share/jupyter/kernels/
+# # RUN mv /root/.local/share/jupyter/kernels/OpenModelica /usr/local/share/jupyter/kernels/
+
+# WORKDIR  /usr/local/share/jupyter/kernels/
+RUN cp -R /root/.local/share/jupyter/kernels/julia* /usr/local/share/jupyter/kernels/
+
+# RUN chmod -R go+rx /usr/local/share/jupyter
 
 # Change the container to non-root "openmodelicauser" and set the env
-USER openmodelicausers
-ENV HOME /home/openmodelicausers
-ENV USER openmodelicausers
-WORKDIR $HOME
+# USER openmodelicausers
+# ENV HOME /home/openmodelicausers
+# ENV USER openmodelicausers
+# USER jovyan
 
 
+
+
+
+#____PyFoam _______________________________
+RUN   pip install PyFoam
 
 
 #____SoS __________________________________
 RUN   pip install --upgrade pip \
-   && pip install jupyter -U \
+   && pip install jupyter \
                   jupyterlab \
                   sos \
                   sos-notebook \
-                  sos-bash \
+                  # sos-bash \
 									bash_kernel \
 									markdown_kernel \
                   # sos-javascript \
-                  sos-julia \
-                  sos-matlab \
-                  sos-python \
-                  sos-r \
+                  # sos-julia \
+                  # sos-matlab \
+                  # sos-python \
+                  # sos-r \
    && python -m sos_notebook.install \
 	 && python -m bash_kernel.install \
 	 && python -m markdown_kernel.install \
+	 && python2 -m pip install ipykernel \
    && jupyter labextension install jupyterlab-sos
 
 #
+
+# RUN mv /root/.local/share/jupyter/kernels/*.* /conda/share/jupyter/kernels/*.*
+
 
 #____javascript/typescript ________________
 # RUN npm install ijavascript \
@@ -200,7 +231,10 @@ RUN   pip install --upgrade pip \
 #  && ijsinstall; \
 #     its --ts-install=local
 
+# ENV HOME /home/jovyan
+# ENV USER jovyan
 
+USER root
 
 WORKDIR /user/jovyan
 
