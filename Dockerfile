@@ -150,11 +150,11 @@ user $NB_UID
 
 # OMPython and jupyter-openmodelica
 run pip install -U git+git://github.com/OpenModelica/OMPython.git \
- && pip install -U git+git://github.com/OpenModelica/jupyter-openmodelica.git \
- \
+ && pip install -U git+git://github.com/OpenModelica/jupyter-openmodelica.git
+
 # SoS
 # https://vatlab.github.io/sos-docs/running.html#Local-installation     \
- && pip install -U sos \
+run pip install -U sos \
  && pip install -U sos-notebook \
  && python -m sos_notebook.install \
  \
@@ -165,12 +165,17 @@ run pip install -U git+git://github.com/OpenModelica/OMPython.git \
  \
 # Markdown
 # https://github.com/vatlab/markdown-kernel
- && pip install -U markdown-kernel \
+ && pip install markdown-kernel \
  && python -m markdown_kernel.install \
  \
-# Octave
+ # Octave
+ # https://github.com/Calysto/octave_kernel
  && pip install octave_kernel \
  \
+# move kernels to /opt/conda, clean up, fix permissions
+ && mv $HOME/.local/share/jupyter/kernels/* $CONDA_DIR/share/jupyter/kernels/  \
+ && chmod -R go+rx $CONDA_DIR/share/jupyter  \
+ && rm -rf $HOME/.local/share/jupyter/kernels  \
  && fix-permissions $CONDA_DIR/share/jupyter
 
 #
