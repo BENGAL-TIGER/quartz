@@ -26,6 +26,7 @@ RUN apt-get update \
 # _____ julia main _____________________________________________
 # Julia dependencies
 # install Julia packages in /opt/julia instead of $HOME
+# user root
 ENV JULIA_DEPOT_PATH=/opt/julia
 ENV JULIA_PKGDIR=/opt/julia
 ENV JULIA_VERSION=1.0.3
@@ -50,7 +51,7 @@ RUN mkdir /etc/julia  \
 
 # _____ OpenModelica and OMPython main _________________________
 # from Dockerfile at https://github.com/OpenModelica/jupyter-openmodelica
-USER root
+# user root
 RUN for deb in deb deb-src; do echo "$deb http://build.openmodelica.org/apt `lsb_release -cs` nightly"; done | tee /etc/apt/sources.list.d/openmodelica.list
 RUN wget -q http://build.openmodelica.org/apt/openmodelica.asc -O- | apt-key add -
 # To verify that your key is installed correctly
@@ -72,7 +73,11 @@ RUN apt-get install -y git
 # RUN pip install --upgrade pip
 # RUN pip install jupyter jupyterlab
 
-# _____ r ______________________________________________________
+# _____ Octave _________________________________________________
+# user root
+RUN apt-get update && apt-get install -y octave octave-dataframe
+
+## _____ r _____________________________________________________
 USER $NB_UID
 
 # R packages including IRKernel which gets installed globally.
@@ -139,30 +144,37 @@ run julia -e 'import Pkg; Pkg.clone("https://github.com/OpenModelica/OMJulia.jl"
  && rm -rf $HOME/.local  \
  && fix-permissions $JULIA_PKGDIR $CONDA_DIR/share/jupyter
 
-
-# Install OMPython and jupyter-openmodelica kernel not as root
+# _____ install kernels, move to $CONDA_DIR/share/jupyter ______
+# Do this as user
 user $NB_UID
 
+# OMPython and jupyter-openmodelica
 run pip install -U git+git://github.com/OpenModelica/OMPython.git \
  && pip install -U git+git://github.com/OpenModelica/jupyter-openmodelica.git \
  \
+# SoS
 # https://vatlab.github.io/sos-docs/running.html#Local-installation     \
  && pip install -U sos \
  && pip install -U sos-notebook \
  && python -m sos_notebook.install \
  \
+# Bash
 # https://github.com/takluyver/bash_kernel
  && pip install -U bash_kernel \
  && python -m bash_kernel.install \
  \
- # https://github.com/vatlab/markdown-kernel
+# Markdown
+# https://github.com/vatlab/markdown-kernel
  && pip install -U markdown-kernel \
  && python -m markdown_kernel.install \
+ \
+# Octave
+ && pip install octave_kernel \
  \
  && fix-permissions $CONDA_DIR/share/jupyter
 
 #
 # _____ wrap up and go home ____________________________________
+env JUPYTER_ENABLE_LAB=TRUE
 env USER=$NB_USER
-env JUPYTER_ENABLE_LAB=false
 workdir /user/jovyan/work
