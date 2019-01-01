@@ -11,8 +11,6 @@ LABEL maintainer="mdAshford"
 
 USER root
 
-ENV JUPYTER_ENABLE_LAB=false
-
 # R pre-requisites
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -24,30 +22,33 @@ RUN apt-get update \
     gnupg \
  && rm -rf /var/lib/apt/lists/*
 
+
+# _____ julia main _____________________________________________
 # Julia dependencies
 # install Julia packages in /opt/julia instead of $HOME
 ENV JULIA_DEPOT_PATH=/opt/julia
 ENV JULIA_PKGDIR=/opt/julia
 ENV JULIA_VERSION=1.0.3
 
-RUN mkdir /opt/julia-${JULIA_VERSION} && \
-    cd /tmp && \
-    wget -q https://julialang-s3.julialang.org/bin/linux/x64/`echo ${JULIA_VERSION} | cut -d. -f 1,2`/julia-${JULIA_VERSION}-linux-x86_64.tar.gz && \
-    echo "362ba867d2df5d4a64f824e103f19cffc3b61cf9d5a9066c657f1c5b73c87117 *julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | sha256sum -c - && \
-    tar xzf julia-${JULIA_VERSION}-linux-x86_64.tar.gz -C /opt/julia-${JULIA_VERSION} --strip-components=1 && \
-    rm /tmp/julia-${JULIA_VERSION}-linux-x86_64.tar.gz
+RUN mkdir /opt/julia-${JULIA_VERSION}  \
+ && cd /tmp  \
+ && wget -q https://julialang-s3.julialang.org/bin/linux/x64/`echo ${JULIA_VERSION} | cut -d. -f 1,2`/julia-${JULIA_VERSION}-linux-x86_64.tar.gz  \
+ && echo "362ba867d2df5d4a64f824e103f19cffc3b61cf9d5a9066c657f1c5b73c87117 *julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | sha256sum -c -  \
+ && tar xz f julia-${JULIA_VERSION}-linux-x86_64.tar.gz -C /opt/julia-${JULIA_VERSION} --strip-components=1  \
+ && rm /tmp/julia-${JULIA_VERSION}-linux-x86_64.tar.gz
+
 RUN ln -fs /opt/julia-*/bin/julia /usr/local/bin/julia
 
 # Show Julia where conda libraries are \
-RUN mkdir /etc/julia && \
-    echo "push!(Libdl.DL_LOAD_PATH, \"$CONDA_DIR/lib\")" >> /etc/julia/juliarc.jl && \
-    # Create JULIA_PKGDIR \
-    mkdir $JULIA_PKGDIR && \
-    chown $NB_USER $JULIA_PKGDIR && \
-    fix-permissions $JULIA_PKGDIR
+RUN mkdir /etc/julia  \
+ && echo "push!(Libdl.DL_LOAD_PATH, \"$CONDA_DIR/lib\")" >> /etc/julia/juliarc.jl  \
+# Create JULIA_PKGDIR \
+ && mkdir $JULIA_PKGDIR  \
+ && chown $NB_USER $JULIA_PKGDIR  \
+ && fix-permissions $JULIA_PKGDIR
 
-#
-# OpenModelica and OMPython
+# _____ OpenModelica and OMPython main _________________________
+# from Dockerfile at https://github.com/OpenModelica/jupyter-openmodelica
 USER root
 RUN for deb in deb deb-src; do echo "$deb http://build.openmodelica.org/apt `lsb_release -cs` nightly"; done | tee /etc/apt/sources.list.d/openmodelica.list
 RUN wget -q http://build.openmodelica.org/apt/openmodelica.asc -O- | apt-key add -
@@ -56,7 +57,7 @@ RUN apt-key fingerprint
 # RUN apt update \
 #  && apt install -y openmodelica
 
-# Update index (again)
+# Update index (again) and intsall full openmodelica
 RUN apt-get update && apt-get install -y openmodelica omlib-modelica-3.2.2
 # RUN apt-get install -y omc omlib-modelica-3.2.2
 # RUN apt-get install -y omc omlib-*
@@ -65,12 +66,12 @@ RUN apt-get update && apt-get install -y openmodelica omlib-modelica-3.2.2
 # RUN apt-get install -y python-pip python-dev build-essential
 RUN apt-get install -y git
 
+#### no need for yhis step. we already did it
 # # Install Jupyter notebook, always upgrade pip
 # RUN pip install --upgrade pip
 # RUN pip install jupyter jupyterlab
 
-
-
+# _____ r ______________________________________________________
 USER $NB_UID
 
 # R packages including IRKernel which gets installed globally.
@@ -100,8 +101,11 @@ RUN conda install --quiet --yes \
     'feather-format'
 
 RUN conda clean -tipsy \
-  && fix-permissions $CONDA_DIR \
-  && fix-permissions /home/$NB_USER
+ && fix-permissions $CONDA_DIR \
+ && fix-permissions /home/$NB_USER
+
+
+# _____ julia packages _________________________________________
 
 # Add Julia packages. Only add HDF5 if this is not a test-only build since
 # it takes roughly half the entire build time of all of the images on Travis
@@ -110,36 +114,54 @@ RUN conda clean -tipsy \
 # Install IJulia as jovyan and then move the kernelspec out
 # to the system share location. Avoids problems with runtime UID change not
 # taking effect properly on the .local folder in the jovyan home dir.
-RUN julia -e 'import Pkg; Pkg.update()' && \
-    # (test $TEST_ONLY_BUILD || julia -e 'import Pkg; Pkg.add("HDF5")') && \
-    julia -e 'import Pkg; Pkg.add("Gadfly")' && \
-    julia -e 'import Pkg; Pkg.add("RDatasets")' && \
-    julia -e 'import Pkg; Pkg.add("ZMQ")' && \
-    julia -e 'import Pkg; Pkg.add("Compat")' && \
-    julia -e 'import Pkg; Pkg.add("DataStructures")' && \
-    julia -e 'import Pkg; Pkg.add("DataFrames")' && \
-    julia -e 'import Pkg; Pkg.add("LightXML")' && \
-    julia -e 'import Pkg; Pkg.add("Random")'
 
-run julia -e 'import Pkg; Pkg.clone("https://github.com/OpenModelica/OMJulia.jl"); Pkg.resolve(); Pkg.update(); using OMJulia' && \
-    julia -e 'import Pkg; Pkg.add("IJulia")' && \
-    # Precompile Julia packages \
-    julia -e 'using IJulia' && \
-    # move kernelspec out of home \
-    mv $HOME/.local/share/jupyter/kernels/julia* $CONDA_DIR/share/jupyter/kernels/ && \
-    chmod -R go+rx $CONDA_DIR/share/jupyter && \
-    rm -rf $HOME/.local && \
-    fix-permissions $JULIA_PKGDIR $CONDA_DIR/share/jupyter
+RUN julia -e 'import Pkg; Pkg.update()'  \
+ # && julia -e 'import Pkg; Pkg.add("HDF5")')  \
+ && julia -e 'import Pkg; Pkg.add("Gadfly")'  \
+ && julia -e 'import Pkg; Pkg.add("RDatasets")'  \
+ && julia -e 'import Pkg; Pkg.add("ZMQ")'  \
+ && julia -e 'import Pkg; Pkg.add("Compat")'  \
+ && julia -e 'import Pkg; Pkg.add("DataStructures")' \
+ && julia -e 'import Pkg; Pkg.add("DataFrames")' \
+ && julia -e 'import Pkg; Pkg.add("LightXML")' \
+ && julia -e 'import Pkg; Pkg.add("Unitful")' \
+ && julia -e 'import Pkg; Pkg.add("CSV")' \
+ && julia -e 'import Pkg; Pkg.add("Random")'
 
-#
-env USER=$NB_USER
+run julia -e 'import Pkg; Pkg.clone("https://github.com/OpenModelica/OMJulia.jl"); Pkg.resolve(); Pkg.update(); using OMJulia'  \
+ && julia -e 'import Pkg; Pkg.add("IJulia")' \
+ #  Precompile Julia packages \
+ && julia -e 'using IJulia' \
+ # move ker&&npec out of home \
+ && mv $HOME/.local/share/jupyter/kernels/julia* $CONDA_DIR/share/jupyter/kernels/  \
+ && chmod -R go+rx $CONDA_DIR/share/jupyter  \
+ && rm -rf $HOME/.local  \
+ && fix-permissions $JULIA_PKGDIR $CONDA_DIR/share/jupyter
 
+
+# Install OMPython and jupyter-openmodelica kernel not as root
 user $NB_UID
 
-# Install OMPython and jupyter-openmodelica kernel
-RUN pip install -U git+git://github.com/OpenModelica/OMPython.git
-RUN pip install -U git+git://github.com/OpenModelica/jupyter-openmodelica.git
+run pip install -U git+git://github.com/OpenModelica/OMPython.git \
+ && pip install -U git+git://github.com/OpenModelica/jupyter-openmodelica.git \
+ \
+# https://vatlab.github.io/sos-docs/running.html#Local-installation     \
+ && pip install -U sos \
+ && pip install -U sos-notebook \
+ && python -m sos_notebook.install \
+ \
+# https://github.com/takluyver/bash_kernel
+ && pip install -U bash_kernel \
+ && python -m bash_kernel.install \
+ \
+ # https://github.com/vatlab/markdown-kernel
+ && pip install -U markdown-kernel \
+ && python -m markdown_kernel.install \
+ \
+ && fix-permissions $CONDA_DIR/share/jupyter
 
-RUN fix-permissions $CONDA_DIR/share/jupyter
-
-WORKDIR /user/jovyan/work
+#
+# _____ wrap up and go home ____________________________________
+env USER=$NB_USER
+env JUPYTER_ENABLE_LAB=false
+workdir /user/jovyan/work
