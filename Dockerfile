@@ -30,12 +30,13 @@ ENV JULIA_DEPOT_PATH=/opt/julia
 ENV JULIA_PKGDIR=/opt/julia
 ENV JULIA_VERSION=1.0.3
 
-RUN mkdir /opt/julia-${JULIA_VERSION}  \
- && cd /tmp  \
- && wget -q https://julialang-s3.julialang.org/bin/linux/x64/`echo ${JULIA_VERSION} | cut -d. -f 1,2`/julia-${JULIA_VERSION}-linux-x86_64.tar.gz  \
- && echo "362ba867d2df5d4a64f824e103f19cffc3b61cf9d5a9066c657f1c5b73c87117 *julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | sha256sum -c -  \
- && tar xz f julia-${JULIA_VERSION}-linux-x86_64.tar.gz -C /opt/julia-${JULIA_VERSION} --strip-components=1  \
- && rm /tmp/julia-${JULIA_VERSION}-linux-x86_64.tar.gz
+#
+RUN mkdir /opt/julia-${JULIA_VERSION} && \
+    cd /tmp && \
+    wget -q https://julialang-s3.julialang.org/bin/linux/x64/`echo ${JULIA_VERSION} | cut -d. -f 1,2`/julia-${JULIA_VERSION}-linux-x86_64.tar.gz && \
+    echo "362ba867d2df5d4a64f824e103f19cffc3b61cf9d5a9066c657f1c5b73c87117 *julia-${JULIA_VERSION}-linux-x86_64.tar.gz" | sha256sum -c - && \
+    tar xzf julia-${JULIA_VERSION}-linux-x86_64.tar.gz -C /opt/julia-${JULIA_VERSION} --strip-components=1 && \
+    rm /tmp/julia-${JULIA_VERSION}-linux-x86_64.tar.gz
 
 RUN ln -fs /opt/julia-*/bin/julia /usr/local/bin/julia
 
