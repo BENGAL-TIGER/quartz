@@ -13,9 +13,10 @@ LABEL maintainer="mdAshford"
 # RUN pip install --no-cache-dir notebook==5.*
 
 # Make sure the contents of our repo are in ${HOME}
-COPY . ${HOME}
-USER root
-RUN chown -R ${NB_UID} ${HOME}
-USER ${NB_USER}
+# COPY . ${HOME}
+# USER root
+# RUN chown -R ${NB_UID} ${HOME}
 
-workdir /user/jovyan/work
+USER ${NB_UID}
+
+# workdir /user/jovyan/work
