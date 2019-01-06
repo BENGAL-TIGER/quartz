@@ -1,1 +1,1 @@
-# quartz binder  $\psi^\delta
+# quartz binder  $\psi^\delta$
