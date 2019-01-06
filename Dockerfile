@@ -19,4 +19,4 @@ LABEL maintainer="mdAshford"
 
 USER ${NB_UID}
 
-# workdir /user/jovyan/work
+workdir notebooks
