@@ -10,13 +10,4 @@ FROM marcucius/bengal_tiger:201812192357
 
 LABEL maintainer="mdAshford"
 
-# RUN pip install --no-cache-dir notebook==5.*
-
-# Make sure the contents of our repo are in ${HOME}
-# COPY . ${HOME}
-# USER root
-# RUN chown -R ${NB_UID} ${HOME}
-
 USER ${NB_UID}
-
-workdir notebooks
