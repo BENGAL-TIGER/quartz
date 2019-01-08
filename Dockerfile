@@ -9,17 +9,16 @@ FROM marcucius/bengal_tiger_lab:quartz@sha256:5385ee3c892c572a869e383382550aa719
 
 LABEL maintainer="mdAshford"
 
-USER ${NB_UID}
-
 # Hopefully this connects the binder local './notebooks' directory to the container '/user/jovyan/work' directory
 copy ./notebooks/  $HOME/work/
 
 run fix-permissions $HOME
 
+USER ${NB_UID}
+
 # Nothing else is needed, since all the Jupyter setup is in the foundation of this Dockerfile
-#
-# _____ wrap up and go home ____________________________________
-env JUPYTER_ENABLE_LAB=TRUE
+# _____ so wrap up and go home ____________________________________
+# env JUPYTER_ENABLE_LAB=TRUE
 # env USER=$NB_USER
 # workdir /user/jovyan/work
 workdir $HOME/work
