@@ -10,7 +10,7 @@ FROM marcucius/bengal_tiger_lab:quartz@sha256:39cf86666a208909541dad19959baf2d9c
 LABEL maintainer="mdAshford"
 
 # Hopefully this connects the binder local './notebooks' directory to the container '/user/jovyan/work' directory
-COPY ./notebooks/* 
+COPY ./notebooks/* .
 
 USER ${NB_UID}
 
