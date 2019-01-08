@@ -14,7 +14,8 @@ USER root
 # Hopefully this connects the binder local './notebooks' directory to the container '/user/jovyan/work' directory
 copy ./notebooks/  $HOME/work/
 
-run fix-permissions $HOME
+run chown $NB_USER $HOME \
+ && fix-permissions $HOME
 
 USER ${NB_UID}
 
