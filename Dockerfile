@@ -14,6 +14,8 @@ USER ${NB_UID}
 # Hopefully this connects the binder local './notebooks' directory to the container '/user/jovyan/work' directory
 copy ./notebooks/  $HOME/work/
 
+run fix-permissions $HOME
+
 # Nothing else is needed, since all the Jupyter setup is in the foundation of this Dockerfile
 #
 # _____ wrap up and go home ____________________________________
