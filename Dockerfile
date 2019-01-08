@@ -8,7 +8,7 @@ FROM marcucius/bengal_tiger_lab:quartz@sha256:39cf86666a208909541dad19959baf2d9c
 # FROM marcucius/bengal_tiger_lab:quartz
 
 # Hopefully this connects the binder local './notebooks' directory to the container '/user/jovyan/work' directory
-copy ./notebooks/* /user/jovyan/work/
+add ./notebooks/* /user/jovyan/work/
 
 LABEL maintainer="mdAshford"
 
