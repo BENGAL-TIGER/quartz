@@ -17,6 +17,7 @@ RUN apt-get update \
     fonts-dejavu \
     tzdata \
     gfortran \
+    tree \
     gcc \
     lsb-core \
     gnupg \
