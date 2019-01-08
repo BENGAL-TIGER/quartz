@@ -15,3 +15,9 @@ copy ./notebooks/  $HOME/work/
 USER ${NB_UID}
 
 # Nothing else is needed, since all the Jupyter setup is in the foundation of this Dockerfile
+#
+# _____ wrap up and go home ____________________________________
+env JUPYTER_ENABLE_LAB=TRUE
+# env USER=$NB_USER
+# workdir /user/jovyan/work
+workdir $HOME/work
