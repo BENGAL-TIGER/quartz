@@ -4,7 +4,7 @@
 #
 # Originally based on 'base-notebook' from Jupyter Development Team.
 #
-FROM marcucius/bengal_tiger_lab:quartz@sha256:39cf86666a208909541dad19959baf2d9cb2543f20ea919916221eb230446a6e
+FROM marcucius/bengal_tiger_lab:quartz@sha256:5385ee3c892c572a869e383382550aa71983f17bcb92d3b571fe2d8d10a0ba73
 # FROM marcucius/bengal_tiger_lab:quartz
 
 LABEL maintainer="mdAshford"
