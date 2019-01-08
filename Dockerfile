@@ -182,4 +182,5 @@ run pip install -U sos \
 # _____ wrap up and go home ____________________________________
 env JUPYTER_ENABLE_LAB=TRUE
 env USER=$NB_USER
-workdir /user/jovyan/work
+# workdir /user/jovyan/work
+workdir $HOME/work
