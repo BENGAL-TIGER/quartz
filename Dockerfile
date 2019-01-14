@@ -178,17 +178,18 @@ run pip install -U sos \
  && chmod -R go+rx $CONDA_DIR/share/jupyter  \
  && rm -rf $HOME/.local/share/jupyter/kernels  \
  && fix-permissions $CONDA_DIR/share/jupyter
-
+#
 # copy example files to $HOME/work/examples
-user root
-copy ./notebooks  $HOME/work/examples/
-run chown $NB_USER $HOME/work/examples \
+USER root
+COPY ./notebooks  "$HOME/examples"
+run chown "$NB_USER" "$HOME/examples" \
  && fix-permissions $HOME
 
 USER ${NB_UID}
-
+#
 # _____ wrap up and go home ____________________________________
 env JUPYTER_ENABLE_LAB=TRUE
 env USER=$NB_USER
 # workdir /user/jovyan/work
+run mv $HOME/examples $HOME/work/examples
 workdir $HOME/work
