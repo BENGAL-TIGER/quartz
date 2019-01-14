@@ -180,7 +180,11 @@ run pip install -U sos \
  && fix-permissions $CONDA_DIR/share/jupyter
 
 # copy example files to $HOME/work/examples
+copy ./notebooks/  $HOME/work/examples
+run chown $NB_USER $HOME/work/examples \
+ && fix-permissions $HOME
 
+USER ${NB_UID}
 
 # _____ wrap up and go home ____________________________________
 env JUPYTER_ENABLE_LAB=TRUE
