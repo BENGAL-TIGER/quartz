@@ -181,7 +181,7 @@ run pip install -U sos \
 
 # copy example files to $HOME/work/examples
 user root
-copy ./notebooks/  $HOME/work/examples/
+copy ./notebooks  $HOME/work/examples/
 run chown $NB_USER $HOME/work/examples \
  && fix-permissions $HOME
 
