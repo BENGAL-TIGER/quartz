@@ -180,6 +180,7 @@ run pip install -U sos \
  && fix-permissions $CONDA_DIR/share/jupyter
 
 # copy example files to $HOME/work/examples
+user root
 copy ./notebooks/  $HOME/work/examples/
 run chown $NB_USER $HOME/work/examples \
  && fix-permissions $HOME
