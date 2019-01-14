@@ -12,7 +12,7 @@ LABEL maintainer="mdAshford"
 USER root
 
 # Hopefully this connects the binder local './notebooks' directory to the container '/user/jovyan/work' directory
-copy ./notebooks/  $HOME/work/examples
+copy ./notebooks/  $HOME/work/examples/
 
 run chown $NB_USER $HOME \
  && fix-permissions $HOME
