@@ -179,7 +179,9 @@ run pip install -U sos \
  && rm -rf $HOME/.local/share/jupyter/kernels  \
  && fix-permissions $CONDA_DIR/share/jupyter
 
-#
+# copy example files to $HOME/work/examples
+
+
 # _____ wrap up and go home ____________________________________
 env JUPYTER_ENABLE_LAB=TRUE
 env USER=$NB_USER
