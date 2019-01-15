@@ -186,6 +186,7 @@ run chown "$NB_USER" "$HOME/examples" \
  && fix-permissions $HOME
 
 USER ${NB_UID}
+# run mv "$HOME/examples/index.ipynb" .
 #
 # _____ wrap up and go home ____________________________________
 env JUPYTER_ENABLE_LAB=TRUE
